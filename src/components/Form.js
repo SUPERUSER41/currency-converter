@@ -110,14 +110,12 @@ const mapDispatchToProps = dispatch => {
       dispatch({ type: "SET_RESULTS", payload: payload });
     },
     setShowResults: status => {
-      console.log(status);
       dispatch({ type: "SET_SHOW_RESULTS", status: status });
     },
     setAmount: amount => {
       dispatch({ type: "SET_AMOUNT", amount: amount });
     },
     setSelectedItem: payload => {
-      console.log(payload);
       dispatch({ type: "SET_SELECTED_ITEM", selectedItem: payload });
     },
     calculate: () => {
