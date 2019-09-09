@@ -28,6 +28,7 @@ const Form = props => {
         props.setConvertTo(item);
       }
     }
+    props.setShowResults(false);
     setShowItems(false);
   };
 
