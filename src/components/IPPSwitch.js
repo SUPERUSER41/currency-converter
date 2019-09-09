@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import "../styles/Switch.css";
 import Switch from "react-switch";
+import { connect } from "react-redux";
 
 const IPPSwitch = props => {
   const handleChange = () => {
     props.swap();
+    props.handleToggle(props.toggle);
   };
   return (
     <div className="flex-container">
@@ -25,4 +27,19 @@ const IPPSwitch = props => {
     </div>
   );
 };
-export default IPPSwitch;
+const mapStateToProps = state => {
+  return {
+    toggle: state.main.toggle
+  };
+};
+const mapDispatchToProps = dispatch => {
+  return {
+    handleToggle: toggle => {
+      dispatch({ type: "SET_TOGGLE", toggle: !toggle });
+    }
+  };
+};
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(IPPSwitch);

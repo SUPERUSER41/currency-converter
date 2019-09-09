@@ -1,6 +1,8 @@
 import React from "react";
+import { connect } from "react-redux";
 
 const Results = props => {
+  console.log(props);
   const cancel = e => {
     props.setShowResults(false);
   };
@@ -51,4 +53,19 @@ const Results = props => {
     </div>
   );
 };
-export default Results;
+const mapStateToProps = state => {
+  return {
+    results: state.main.results
+  };
+};
+const mapDispatchToProps = dispatch => {
+  return {
+    setShowResults: status => {
+      dispatch({ type: "SET_SHOW_RESULTS", payload: status });
+    }
+  };
+};
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Results);

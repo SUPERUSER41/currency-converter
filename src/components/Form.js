@@ -2,25 +2,22 @@ import React, { useEffect, useState } from "react";
 import Select from "./Select";
 import moment from "moment";
 import "../styles/Form.css";
+import { connect } from "react-redux";
 
 const Form = props => {
-  const [amount, setAmount] = useState(1);
-  const [currencies, setCurrencies] = useState(props.currencies);
-  const [selectedItem, setSelectedItem] = useState(null);
-
-  useEffect(() => {
-    setCurrencies(props.currencies);
-    setSelectedItem(props.toggle ? props.convertTo : props.base);
-  }, [props, selectedItem]);
+  console.log(props);
   const handleInput = e => {
-    setAmount(e.target.value);
-    calculate(e);
+    props.saveLastCalculatedEntry(e);
+    props.setAmount(e.target.value);
+    props.calculate();
   };
   const selectItem = (item, id, setShowItems) => {
+    console.log(item);
+
     if (!props.toggle) {
       if (id === "from") {
         props.setBase(item);
-        setSelectedItem(item);
+        props.setSelectedItem(item);
       } else if (id === "to") {
         props.setConvertTo(item);
       }
@@ -34,71 +31,6 @@ const Form = props => {
     setShowItems(false);
   };
 
-  const calculate = e => {
-    e.preventDefault();
-    if (props.toggle === false) {
-      props.setResults({
-        date: moment
-          .unix(selectedItem.data.date._seconds)
-          .format("MMMM Do YYYY | h:mm:ss a"),
-
-        amount: formatMoney(amount),
-        calculated: formatMoney(selectedItem.data.cash.sell * amount),
-        base: selectedItem.data.base,
-        convertTo: "JMD",
-        sell: formatMoney(selectedItem.data.cash.sell),
-        buy: formatMoney(selectedItem.data.cash.buy)
-      });
-    } else {
-      props.setResults({
-        date: moment
-          .unix(selectedItem.data.date._seconds)
-          .format("MMMM Do YYYY | h:mm:ss a"),
-        amount: formatMoney(amount),
-        calculated: formatMoney(selectedItem.data.cash.buy * amount),
-        base: selectedItem.data.base,
-        convertTo: "JMD",
-        sell: formatMoney(selectedItem.data.cash.sell),
-        buy: formatMoney(selectedItem.data.cash.buy)
-      });
-    }
-
-    props.setShowResults(true);
-  };
-
-  const formatMoney = (
-    amount,
-    decimalCount = 2,
-    decimal = ".",
-    thousands = ","
-  ) => {
-    try {
-      decimalCount = Math.abs(decimalCount);
-      decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
-
-      const negativeSign = amount < 0 ? "-" : "";
-
-      let i = parseInt(
-        (amount = Math.abs(Number(amount) || 0).toFixed(decimalCount))
-      ).toString();
-      let j = i.length > 3 ? i.length % 3 : 0;
-
-      return (
-        negativeSign +
-        (j ? i.substr(0, j) + thousands : "") +
-        i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) +
-        (decimalCount
-          ? decimal +
-            Math.abs(amount - i)
-              .toFixed(decimalCount)
-              .slice(2)
-          : "")
-      );
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
   return (
     <form className="mt-2">
       <div className="form-row align-items-center justify-content-around">
@@ -110,7 +42,8 @@ const Form = props => {
               onChange={handleInput}
               min="0"
               max="1000"
-              defaultValue={amount}
+              placeholder="Please enter a value"
+              defaultValue={props.amount}
               className="form-control form-control-lg amount-input"
             />
           </div>
@@ -122,7 +55,7 @@ const Form = props => {
               id={props.toggle ? "to" : "from"}
               selectItem={selectItem}
               selectedItem={props.base}
-              items={currencies}
+              items={props.currencies}
             />
           </div>
         </div>
@@ -133,14 +66,17 @@ const Form = props => {
               id={props.toggle ? "from" : "to"}
               selectedItem={props.convertTo}
               selectItem={selectItem}
-              items={currencies}
+              items={props.currencies}
             />
           </div>
         </div>
         <div className="col-md-4 mt-3">
           <button
             type="submit"
-            onClick={e => calculate(e)}
+            onClick={e => {
+              e.preventDefault();
+              props.calculate();
+            }}
             className="btn btn-block btn-lg convert-btn"
           >
             Convert
@@ -150,5 +86,46 @@ const Form = props => {
     </form>
   );
 };
-export default Form;
+
+const mapStateToProps = state => {
+  return {
+    test: state.main,
+    lastInput: state.main.lastInput,
+    toggle: state.main.toggle,
+    currencies: state.main.currencies,
+    amount: state.main.amount,
+    base: state.main.base,
+    selectedItem: state.main.selectedItem,
+    convertTo: state.main.convertTo
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    saveLastCalculatedEntry: e => {
+      dispatch({ type: "SAVE_LAST_CALCULATED", value: e });
+    },
+    setResultsInRedux: payload => {
+      dispatch({ type: "SET_RESULTS", payload: payload });
+    },
+    setShowResults: status => {
+      console.log(status);
+      dispatch({ type: "SET_SHOW_RESULTS", status: status });
+    },
+    setAmount: amount => {
+      dispatch({ type: "SET_AMOUNT", amount: amount });
+    },
+    setSelectedItem: payload => {
+      console.log(payload);
+      dispatch({ type: "SET_SELECTED_ITEM", selectedItem: payload });
+    },
+    calculate: () => {
+      dispatch({ type: "CALCULATE" });
+    }
+  };
+};
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Form);
 // selectedItem={selectedItem != null ? selectedItem : props.base}

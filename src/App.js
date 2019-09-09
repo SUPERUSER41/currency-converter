@@ -4,31 +4,22 @@ import IPPSwitch from "./components/IPPSwitch";
 import Form from "./components/Form";
 import Results from "./components/Results";
 import "./styles/App.css";
+import { connect } from "react-redux";
 
-const App = () => {
-  const [currencies, setCurrencies] = useState({ currencies: [] });
-  const [base, setBase] = useState(null);
-  const [convertTo, setConvertTo] = useState(null);
-  const [showResults, setShowResults] = useState(false);
-  const [toggle, setToggle] = useState(false);
-  const [results, setResults] = useState({
-    date: "",
-    amount: 0,
-    calculated: 0,
-    base: "",
-    convertTo: "",
-    sell: 0,
-    buy: 0
-  });
+const App = props => {
+  console.log(props);
 
   useEffect(() => {
+    let result;
     const fetchData = async () => {
-      const result = await axios(
+      result = await axios(
         "https://fx-currency-converter.firebaseapp.com/api/v1/currencies/"
       );
-      setCurrencies(result.data);
-      setBase(result.data && result.data[4]);
-      setConvertTo({
+
+      props.setCurrencies(result.data);
+      console.log(result);
+      props.setBase(result.data && result.data[4]);
+      props.setConvertTo({
         data: {
           base: "JMD",
           image:
@@ -38,13 +29,20 @@ const App = () => {
         }
       });
     };
-    fetchData();
+    fetchData().then(() => {
+      !props.toggle
+        ? props.setSelectedItem(result.data && result.data[4])
+        : props.setSelectedItem(props.convertTo);
+    });
   }, []);
 
   const swap = () => {
-    setBase(convertTo);
-    setConvertTo(base);
-    setToggle(!toggle);
+    console.log(props.base);
+    props.setBase(props.convertTo);
+    props.setConvertTo(props.base);
+    setTimeout(() => {
+      props.calculate();
+    }, 100);
   };
 
   return (
@@ -56,23 +54,19 @@ const App = () => {
               <h4 className="card-title">FX CURRENCY CONVERTER</h4>
             </div>
             <div className="col-md-3">
-              <IPPSwitch toggle={toggle} swap={swap} />
+              <IPPSwitch swap={swap} />
             </div>
           </div>
           <hr />
           <Form
-            setResults={setResults}
-            setShowResults={setShowResults}
-            showResults={showResults}
-            setBase={setBase}
-            base={base}
-            toggle={toggle}
-            convertTo={convertTo}
-            setConvertTo={setConvertTo}
-            currencies={currencies}
+            setBase={props.setBase}
+            base={props.base}
+            convertTo={props.convertTo}
+            setConvertTo={props.setConvertTo}
+            currencies={props.currencies}
           />
-          {showResults ? (
-            <Results setShowResults={setShowResults} results={results} />
+          {props.showResults ? (
+            <Results />
           ) : (
             <div className="row align-items-center justify-content-center mt-4">
               <small>
@@ -86,4 +80,38 @@ const App = () => {
     </div>
   );
 };
-export default App;
+
+const mapStateToProps = state => {
+  return {
+    showResults: state.main.showResults,
+    currencies: state.main.currencies,
+    convertTo: state.main.convertTo,
+    toggle: state.main.toggle,
+    base: state.main.base
+  };
+};
+const mapDispatchToProps = dispatch => {
+  return {
+    setCurrencies: currencies => {
+      dispatch({ type: "SET_CURRENCIES", currencies: currencies });
+    },
+    setBase: base => {
+      dispatch({ type: "SET_BASE", base: base });
+    },
+    setConvertTo: payload => {
+      console.log(payload);
+      dispatch({ type: "SET_CONVERT_TO", payload: payload });
+    },
+    setSelectedItem: payload => {
+      console.log(payload);
+      dispatch({ type: "SET_SELECTED_ITEM", selectedItem: payload });
+    },
+    calculate: () => {
+      dispatch({ type: "CALCULATE" });
+    }
+  };
+};
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(App);
