@@ -16,8 +16,11 @@ function wp_currency_converter_show_converter()
 add_action('wp_enqueue_scripts', 'wp_currency_converter_enqueue_scripts');
 function wp_currency_converter_enqueue_scripts()
 {
-    wp_enqueue_script('react', 'https://unpkg.com/react@16/umd/react.production.min.js', '', null, false);
-    wp_enqueue_script('react-dom', 'https://unpkg.com/react-dom@16/umd/react-dom.production.min.js', '', null, false);
+    // wp_enqueue_script('react', 'https://unpkg.com/react@16/umd/react.production.min.js', '', null, false);
+    // wp_enqueue_script('react-dom', 'https://unpkg.com/react-dom@16/umd/react-dom.production.min.js', '', null, false);
+    // wp_enqueue_script('babel', 'https://npmcdn.com/babel-core@5.8.38/browser.min.js', '', null, false);
+    wp_enqueue_script('react', plugin_dir_url(__FILE__) . 'react/build/react.min.js');
+    wp_enqueue_script('react-dom', plugin_dir_url(__FILE__) . 'react/build/react-dom.min.js');
     wp_enqueue_script('babel', 'https://npmcdn.com/babel-core@5.8.38/browser.min.js', '', null, false);
     wp_enqueue_script('wp-currency-converter', plugin_dir_url(__FILE__) . 'build/static/js/main.1d65b171.chunk.js');
     wp_enqueue_script('wp-currency-converter', plugin_dir_url(__FILE__) . 'build/static/js/2.3f85877c.chunk.js');
