@@ -12,7 +12,3 @@ ReactDOM.render(
   </Provider>,
   document.getElementById("root")
 );
-
-// document.addEventListener("DOMContentLoaded", function() {
-//   ReactDOM.render(<App />, document.getElementById("root"));
-// });
